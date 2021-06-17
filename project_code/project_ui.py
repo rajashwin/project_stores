@@ -586,6 +586,11 @@ class rpi_UI:
 		self.GUIFrame_view_stock.destroy()
 		self.page_one()
 
+
+
+
+
+
 	#########################################INDENT BUTTON#################################################
 	def indentStock_btn(self):
 		print("indent stock")
@@ -606,32 +611,41 @@ class rpi_UI:
 		self.Button_backAdmin = tk.Button(self.GUIFrame_indentStock, font=self.helv36_login, bd=1, text='BACK ',
 										  command=lambda: self.indentBack_btn(), width=10)
 		self.Button_backAdmin.place(x=600, y=500)
-		self.options = [
-			"User 1",
-			"User 2",
-			"User 3",
-			"User 4",
-			"User 5",
-			"User 6",
-			"User 7"
-		]
-		# datatype of menu text
-		self.clicked = StringVar()
-
-		# initial menu text
-		self.clicked.set("User 1")
+		# self.options = [
+		# 	"User 1",
+		# 	"User 2",
+		# 	"User 3",
+		# 	"User 4",
+		# 	"User 5",
+		# 	"User 6",
+		# 	"User 7"
+		# ]
+		# # datatype of menu text
+		# self.clicked = StringVar()
+		#
+		# # initial menu text
+		# self.clicked.set("User 1")
 
 		# Create Dropdown menu
-		self.drop = tk.OptionMenu(self.GUIFrame_indentStock, self.clicked, *self.options)
-		self.drop.config(width=10, font=self.helv36_login)
-		menu = self.GUIFrame_indentStock.nametowidget(self.drop.menuname)
-		menu.config(font=self.helv36_login)  # Set the dropdown menu's font
-		self.drop.place(x=700, y=100)
+		# self.drop = tk.OptionMenu(self.GUIFrame_indentStock, self.clicked, *self.options)
+		# self.drop.config(width=10, font=self.helv36_login)
+		# menu = self.GUIFrame_indentStock.nametowidget(self.drop.menuname)
+		# menu.config(font=self.helv36_login)  # Set the dropdown menu's font
+		# self.drop.place(x=700, y=100)
+
+		###---------Admin  Measure
+		self.indentQty_Label = tk.Label(self.GUIFrame_indentStock, font=self.times_16 , text="Qty")
+		self.indentQty_Label.place(x=50, y=120)
+
+		self.indentMaterial_Label = tk.Label(self.GUIFrame_indentStock, font=self.times_16 , text="Material Name")
+		self.indentMaterial_Label.place(x=150, y=120)
+
+
 
 
 		# ---scrollbar frame
 		self.GUIFramescrollbarIndent = tk.Frame(self.GUIFrame_indentStock, width=400, height=400)
-		self.GUIFramescrollbarIndent.place(x=30, y=110)
+		self.GUIFramescrollbarIndent.place(x=30, y=150)
 
 		# ---scrollbar initilization
 		self.scrollbar_yIndent = Scrollbar(self.GUIFramescrollbarIndent, width=40)
@@ -685,17 +699,22 @@ class rpi_UI:
 		###---------Reject button
 		self.Button_rejectIndent = tk.Button(self.GUIFrame_indentStock, font=self.helv36_login, bd=1, text='Reject ',
 										  command=lambda: self.indentReject_btn(), width=10)
-		self.Button_rejectIndent.place(x=500, y=300)
+		self.Button_rejectIndent.place(x=500, y=350)
 
 		###---------Accept button
 		self.Button_acceptIndent = tk.Button(self.GUIFrame_indentStock, font=self.helv36_login, bd=1, text='Accept ',
 											 command=lambda: self.indentAccept_btn(), width=10)
-		self.Button_acceptIndent.place(x=500, y=350)
+		self.Button_acceptIndent.place(x=500, y=300)
 
 		###---------Update button
 		self.Button_updateIndent = tk.Button(self.GUIFrame_indentStock, font=self.helv36_login, bd=1, text='Update ',
 											 command=lambda: self.indentUpdate_btn(), width=10)
-		self.Button_updateIndent.place(x=650, y=400)
+		self.Button_updateIndent.place(x=700, y=350)
+
+		###---------clear button
+		self.Button_ClearIndent = tk.Button(self.GUIFrame_indentStock, font=self.helv36_login, bd=1, text='Clear  ',
+											 command=lambda: self.clearUpdate_btn(), width=10)
+		self.Button_ClearIndent.place(x=700, y=300)
 
 	def indentBack_btn(self):
 		self.Button_backAdmin.destroy()
@@ -706,21 +725,49 @@ class rpi_UI:
 		self.page_one()
 
 	def indentReject_btn(self):
+		self.txtIndent.configure(state='normal')
+		self.txtIndent.delete(self.start_d, self.end_d)
+		self.txtIndent.configure(state='disable')
+		self.line=0
 		pass
 
 	def indentAccept_btn(self):
-		self.txtIndent.configure(state='normal')
-		self.txtIndent.delete(1.0, END)
-		self.txtIndent.insert(tk.END, str(self.indentQty_Var.get()).ljust(5)+' | ')
-		self.txtIndent.insert(tk.END, str(self.box_value.get()))
-		self.txtIndent.insert(tk.INSERT,'\n')
-		self.txtIndent.configure(state='disable')
-		pass
+		if(self.box_value.get()==""):
+			tk.messagebox.showerror("Error", "Material Name")
+			pass
+		elif(self.indentQty_Var.get()==""):
+			tk.messagebox.showerror("Error", "Quantity")
+			pass
+		else:
+			self.txtIndent.configure(state='normal')
+			self.txtIndent.mark_set("insert", END)
+			#self.txtIndent.delete(1.0, END)
+			self.txtIndent.insert(tk.END, str(self.indentQty_Var.get()).ljust(5)+' | ')
+			self.txtIndent.insert(tk.END, str(self.box_value.get()))
+			self.txtIndent.insert(tk.INSERT,'\n')
+			self.txtIndent.configure(state='disable')
+
 
 	def Indent_text_button(self, event):
 		index = self.txtIndent.index("@%s,%s" % (event.x, event.y))
-		line, char = index.split(".")
-		print("you clicked line %s" % line)
+		self.line, char = index.split(".")
+		print("you clicked line %s" % self.line)
+		self.start_d = self.line + '.0'
+		self.end_d = str(int(self.line) + 1) + '.0'
+		print(self.start_d)
+		print(self.end_d)
+
+
+	def clearUpdate_btn(self):
+		self.txtIndent.configure(state='normal')
+		self.txtIndent.delete(1.0, END)
+		self.txtIndent.configure(state='disable')
+		pass
+
+	def indentUpdate_btn(self):
+		pass
+
+
 #########################################HISTORY BUTTON#################################################
 	def history_btn(self):
 		print("history")
@@ -800,5 +847,5 @@ class rpi_UI:
 	def on_text_button(self, event):
 		index = self.txtIndent_history.index("@%s,%s" % (event.x, event.y))
 		line, char = index.split(".")
-		print(line)
+
 rpi_UI()
