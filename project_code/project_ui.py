@@ -1,5 +1,7 @@
 ##--gui module
 import time
+import datetime
+
 from tkinter import *
 import tkinter as tk
 from tkinter import font
@@ -8,8 +10,10 @@ import tkentrycomplete
 
 from PIL import Image, ImageTk
 import sqlite3
-from openpyxl import load_workbook
+#from openpyxl import openpyxl.load_workbook
+import openpyxl
 from pathlib import Path
+import os
 data_folder = "/home/king/PycharmProjects/project_stores"
 # # make database and users (if not exists already) table at programme start up
 # with sqlite3.connect('quit1.db') as d \b:
@@ -40,6 +44,7 @@ class rpi_UI:
 			self.GUIFrame_default.pack()
 
 			self.adminLogin=0
+			self.loginName=""
 			# ===============================================================
 			##--Supporting IMAGES
 			
@@ -56,7 +61,7 @@ class rpi_UI:
 
 			self.update_log=tk.PhotoImage(file=str(data_folder)+"/Images/icon/update_icon1.png")
 
-			self.wb = load_workbook(str(data_folder)+"/data_storage/store_details.xlsx")
+			self.wb = openpyxl.load_workbook(str(data_folder)+"/data_storage/store_details.xlsx")
 			self.sheet = self.wb["Sheet1"]
 			self.row_count = self.sheet.max_row
 			self.column_count = self.sheet.max_column
@@ -65,7 +70,7 @@ class rpi_UI:
 			##--FONT TYPE
 			self.helv36_login = font.Font(family='Helvetica', size=16, weight='bold')
 			self.helv8_login = font.Font(family='Helvetica', size=8, weight='normal')
-			self.times_16 = font.Font(family="Times", size=16, weight='normal')
+			self.times_16 = font.Font(family="Helvetica", size=16, weight='normal')
 			self.page_one()
 			self.window.mainloop()
 
@@ -140,6 +145,7 @@ class rpi_UI:
 
 	def pwd_enter(self,key):
 		if (self.login_entry.get() == "westtek" and self.password_entry.get() == "West@1234"):
+			self.loginName ="westtek"
 			self.usr_img_check.configure(image=self.photo_correct)
 			self.pwd_img_check.configure(image=self.photo_correct)
 			if(self.CheckVar.get()==1):
@@ -161,7 +167,7 @@ class rpi_UI:
 
 
 		else:
-			wb_obj = load_workbook("/home/king/PycharmProjects/project_stores/data_storage/user_data.xlsx")
+			wb_obj = openpyxl.load_workbook("/home/king/PycharmProjects/project_stores/data_storage/user_data.xlsx")
 			sheet_obj = wb_obj.active
 			m_row = sheet_obj.max_row
 			username = self.login_entry.get()
@@ -175,9 +181,9 @@ class rpi_UI:
 				if(username == cell_obj1.value):
 					self.usr_img_check.configure(image=self.photo_correct)
 					user_check=1
-					print(cell_obj1.value)
+
 					if( password == cell_obj2.value):
-						print(cell_obj2.value)
+						self.loginName=username
 						self.pwd_img_check.configure(image=self.photo_correct)
 						user_check=2
 						self.adminLogin=0
@@ -272,7 +278,7 @@ class rpi_UI:
 		self.txt_reg.delete(1.0, END)
 
 		# register database
-		wb_user = load_workbook(str(data_folder) + "/data_storage/user_data.xlsx")
+		wb_user = openpyxl.load_workbook(str(data_folder) + "/data_storage/user_data.xlsx")
 		sheet_user =wb_user["Sheet1"]
 		row_count_user = sheet_user.max_row
 		column_count_user = sheet_user.max_column
@@ -320,7 +326,7 @@ class rpi_UI:
 		elif (len(self.pwd_reg.get()) == 0):
 			tk.messagebox.showerror("Error", "Fill Password")
 		else:
-			admin_reg_wb = load_workbook("/home/king/PycharmProjects/project_stores/data_storage/user_data.xlsx")
+			admin_reg_wb = openpyxl.load_workbook("/home/king/PycharmProjects/project_stores/data_storage/user_data.xlsx")
 			admin_reg_sheet = admin_reg_wb["Sheet1"]
 			admin_regrow = admin_reg_sheet.max_row + 1
 			admin_reg_update_value = [admin_reg_sheet.max_row ,self.name_reg.get(),self.emp_reg.get(),self.email_reg.get(),
@@ -333,7 +339,7 @@ class rpi_UI:
 			# register database
 			self.txt_reg.configure(state='normal')
 			self.txt_reg.delete(1.0, END)
-			wb_user = load_workbook(str(data_folder) + "/data_storage/user_data.xlsx")
+			wb_user = openpyxl.load_workbook(str(data_folder) + "/data_storage/user_data.xlsx")
 			sheet_user = wb_user["Sheet1"]
 			row_count_user = sheet_user.max_row
 			column_count_user = sheet_user.max_column
@@ -358,14 +364,12 @@ class rpi_UI:
 			self.GUIFrame_admin.update()
 			self.txt_reg.configure(state='disable')
 
-			#clear All the fields
+			####---clear All the fields
 			self.reg_name_entry.delete(0, END)
 			self.emp_id_entry.delete(0, END)
 			self.emp_email_entry.delete(0, END)
 			self.usr_reg_entry.delete(0, END)
 			self.pwd_reg_entry.delete(0, END)
-
-
 
 	def back_admin_Register(self):
 		self.GUIFrame_admin.destroy()
@@ -382,24 +386,24 @@ class rpi_UI:
 
 		self.ltext2 = tk.Label(self.GUIFrame_page_two, image=self.photo_westtek)
 		self.ltext2.place(x=10, y=10)
-###---------Dispense BUTTON
+		###---------Dispense BUTTON
 		self.Button_admin_up = tk.Button(self.GUIFrame_page_two, font=self.helv36_login, bd=2, text='ADMIN UPDATE',
 		                            command=lambda: self.admin_update_btn(),width=20)
 		self.Button_admin_up.place(x=600, y=120)
 		if(self.adminLogin==0):
 			self.Button_admin_up.config(state='disable',relief=SUNKEN)
 
-###---------Refill BUTTON
+		###---------Refill BUTTON
 		self.Button_view = tk.Button(self.GUIFrame_page_two, font=self.helv36_login, bd=1, text='VIEW STOCK ',
 		                             command=lambda: self.viewStock_btn(), width=20)
 		self.Button_view.place(x=600, y=200)
 
-###---------Refill BUTTON
+		###---------Refill BUTTON
 		self.Button_ind = tk.Button(self.GUIFrame_page_two, font=self.helv36_login, bd=1, text='INDENT STOCK ',
 		                             command=lambda: self.indentStock_btn(), width=20)
 		self.Button_ind.place(x=600, y=280)
 
-###---------History BUTTON
+		###---------History BUTTON
 		self.Button_htry = tk.Button(self.GUIFrame_page_two, font=self.helv36_login, bd=1, text='HISTORY ',
 		                             command=lambda: self.history_btn(), width=20)
 		self.Button_htry.place(x=600, y=360)
@@ -443,7 +447,6 @@ class rpi_UI:
 									  width=15)
 		self.adminMaterialCode_Entry.place(x=50, y=180)
 
-
 		###---------Admin  Material Description
 		self.adminMaterialDesc_Label = tk.Label(self.GUIFrame_admin_update, font=self.helv36_login, text="Material Description")
 		self.adminMaterialDesc_Label.place(x=270, y=150)
@@ -452,7 +455,6 @@ class rpi_UI:
 		self.adminMaterialDesc_Entry = tk.Entry(self.GUIFrame_admin_update, font=self.helv36_login,
 											textvariable=self.adminMaterialDesc_Var,width=25)
 		self.adminMaterialDesc_Entry.place(x=270, y=180)
-
 
 		###---------Admin  store location
 		self.adminStoreLoc_Label = tk.Label(self.GUIFrame_admin_update, font=self.helv36_login, text="Location")
@@ -504,7 +506,7 @@ class rpi_UI:
 		self.page_one()
 
 	def admin_update_value(self):
-		wb = load_workbook("/home/king/PycharmProjects/project_stores/data_storage/test_data.xlsx")
+		wb = openpyxl.load_workbook("/home/king/PycharmProjects/project_stores/data_storage/test_data.xlsx")
 		sheet = wb["Sheet1"]
 		row = sheet.max_row + 1
 		update_value = [sheet.max_row ,self.adminMaterialCode_Var.get(), self.adminMaterialDesc_Var.get(),
@@ -586,11 +588,6 @@ class rpi_UI:
 		self.GUIFrame_view_stock.destroy()
 		self.page_one()
 
-
-
-
-
-
 	#########################################INDENT BUTTON#################################################
 	def indentStock_btn(self):
 		print("indent stock")
@@ -602,36 +599,118 @@ class rpi_UI:
 		self.ltext2 = tk.Label(self.GUIFrame_indentStock, image=self.photo_westtek)
 		self.ltext2.place(x=10, y=10)
 
-		###--------- indent Logout BUTTON
-		self.Button_log_out = tk.Button(self.GUIFrame_indentStock, font=self.helv36_login, bd=1, text='LOGOUT ',
-										command=lambda: self.logoutindent_btn(), width=10)
-		self.Button_log_out.place(x=100, y=500)
+		if(self.loginName=="westtek"):
+			#####-----read user name
+			wb_obj_userName = openpyxl.load_workbook(
+				"/home/king/PycharmProjects/project_stores/data_storage/user_data.xlsx")
+			sheet_obj_userName = wb_obj_userName.active
+			m_row_userName = sheet_obj_userName.max_row
+			self.options = []
+			for i in range(1, m_row_userName + 1):
+				if (i > 1):
+					cell_obj1 = sheet_obj_userName.cell(row=i, column=5)
+					self.options.append(cell_obj1.value)
 
-		###---------indent back BUTTON
-		self.Button_backAdmin = tk.Button(self.GUIFrame_indentStock, font=self.helv36_login, bd=1, text='BACK ',
-										  command=lambda: self.indentBack_btn(), width=10)
-		self.Button_backAdmin.place(x=600, y=500)
-		# self.options = [
-		# 	"User 1",
-		# 	"User 2",
-		# 	"User 3",
-		# 	"User 4",
-		# 	"User 5",
-		# 	"User 6",
-		# 	"User 7"
-		# ]
-		# # datatype of menu text
-		# self.clicked = StringVar()
-		#
-		# # initial menu text
-		# self.clicked.set("User 1")
+			###### datatype of menu text
+			self.clicked = StringVar()
 
-		# Create Dropdown menu
-		# self.drop = tk.OptionMenu(self.GUIFrame_indentStock, self.clicked, *self.options)
-		# self.drop.config(width=10, font=self.helv36_login)
-		# menu = self.GUIFrame_indentStock.nametowidget(self.drop.menuname)
-		# menu.config(font=self.helv36_login)  # Set the dropdown menu's font
-		# self.drop.place(x=700, y=100)
+			###### initial menu text
+			self.clicked.set("Select User")
+
+			#####Create Dropdown menu
+			self.drop = tk.OptionMenu(self.GUIFrame_indentStock, self.clicked, *self.options,command = self.OptionMenu_CheckButton)
+			self.drop.config(width=12, font=self.helv36_login)
+			menu = self.GUIFrame_indentStock.nametowidget(self.drop.menuname)
+			menu.config(font=self.helv36_login)  # Set the dropdown menu's font
+			self.drop.place(x=650, y=100)
+
+			###---------Accept button
+			self.Button_acceptIndentAdmin = tk.Button(self.GUIFrame_indentStock, font=self.helv36_login, bd=1,
+											 text='Accept  ',
+											 command=lambda: self.indentAcceptAdmin_btn(), width=10)
+			self.Button_acceptIndentAdmin.place(x=450, y=150)
+
+			###---------Reject button
+			self.Button_rejectIndentAdmin = tk.Button(self.GUIFrame_indentStock, font=self.helv36_login, bd=1,
+											 text='Reject ',
+											 command=lambda: self.indentRejectAdmin_btn(), width=10)
+			self.Button_rejectIndentAdmin.place(x=450, y=200)
+
+			###---------clear button
+			self.Button_ClearIndentAdmin = tk.Button(self.GUIFrame_indentStock, font=self.helv36_login, bd=1, text='Clear  ',
+											command=lambda: self.clearUpdateAdmin_btn(), width=10)
+			self.Button_ClearIndentAdmin.place(x=450, y=250)
+
+			###---------Update button
+			self.Button_updateIndentAdmin = tk.Button(self.GUIFrame_indentStock, font=self.helv36_login, bd=1,
+											 text='Update ',
+											 command=lambda: self.indentUpdateAdmin_btn(), width=10)
+			self.Button_updateIndentAdmin.place(x=450, y=300)
+
+########### text Box with message
+			self.userIndent = tk.Text(self.GUIFrame_indentStock, height=15, width=35, bg='white', state=DISABLED,selectborderwidth=3)
+			self.userIndent.place(x=620, y=200)
+			self.userIndent.bind('<Triple-1>', self.userIndent_button)
+			self.userIndent_lab = tk.Label(self.GUIFrame_indentStock, text="Indent files", compound="top"
+									 , font=self.times_16)
+			self.userIndent_lab.place(x=700, y=160)
+
+		else:
+			#####-----Select item label
+			self.indentItems_Label = tk.Label(self.GUIFrame_indentStock, font=self.helv36_login, text="Select Items")
+			self.indentItems_Label.place(x=450, y=150)
+
+			#####-----read store details for custom combo box
+			wb_obj_indent = openpyxl.load_workbook(
+				"/home/king/PycharmProjects/project_stores/data_storage/store_details.xlsx")
+
+			sheet_obj_indent = wb_obj_indent.active
+			m_row_indent = sheet_obj_indent.max_row
+			test_list = []
+			for i in range(1, m_row_indent + 1):
+				cell_obj1 = sheet_obj_indent.cell(row=i, column=3)
+				test_list.append(cell_obj1.value)
+
+			#####-----costom combo box
+			self.box_value = tk.StringVar()
+			self.combo = tkentrycomplete.AutocompleteCombobox(self.GUIFrame_indentStock, textvariable=self.box_value)
+			self.combo.config(font=self.times_16)
+			self.combo.config(width=20)
+			self.combo.set_completion_list(test_list)
+			self.combo.place(x=450, y=200)
+
+			###---------material quantity label
+			self.indentQty_Label = tk.Label(self.GUIFrame_indentStock, font=self.helv36_login, text="Qty")
+			self.indentQty_Label.place(x=750, y=150)
+
+			###---------material quantity entry
+			self.indentQty_Var = StringVar()
+			self.indentQty_Entry = tk.Entry(self.GUIFrame_indentStock, font=self.helv36_login,
+											textvariable=self.indentQty_Var, width=10)
+			self.indentQty_Entry.place(x=750, y=200)
+
+			###---------Add button
+			self.Button_addIndent = tk.Button(self.GUIFrame_indentStock, font=self.helv36_login, bd=1,
+												 text='Add    ',
+												 command=lambda: self.indentAdd_btn(), width=10)
+			self.Button_addIndent.place(x=500, y=300)
+
+			###---------Remove button
+			self.Button_removeIndent = tk.Button(self.GUIFrame_indentStock, font=self.helv36_login, bd=1,
+												 text='Remove ',
+												 command=lambda: self.indentRemove_btn(), width=10)
+			self.Button_removeIndent.place(x=500, y=350)
+
+			###---------clear button
+			self.Button_ClearIndent = tk.Button(self.GUIFrame_indentStock, font=self.helv36_login, bd=1, text='Clear  ',
+												command=lambda: self.clearUpdate_btn(), width=10)
+			self.Button_ClearIndent.place(x=700, y=300)
+
+			###---------Update button
+			self.Button_updateIndent = tk.Button(self.GUIFrame_indentStock, font=self.helv36_login, bd=1,
+												 text='Update ',
+												 command=lambda: self.indentUpdate_btn(), width=10)
+			self.Button_updateIndent.place(x=700, y=350)
 
 		###---------Admin  Measure
 		self.indentQty_Label = tk.Label(self.GUIFrame_indentStock, font=self.times_16 , text="Qty")
@@ -639,9 +718,6 @@ class rpi_UI:
 
 		self.indentMaterial_Label = tk.Label(self.GUIFrame_indentStock, font=self.times_16 , text="Material Name")
 		self.indentMaterial_Label.place(x=150, y=120)
-
-
-
 
 		# ---scrollbar frame
 		self.GUIFramescrollbarIndent = tk.Frame(self.GUIFrame_indentStock, width=400, height=400)
@@ -667,54 +743,15 @@ class rpi_UI:
 		self.txtIndent.configure(state='normal')
 		self.txtIndent.delete(1.0, END)
 
-		self.indentItems_Label = tk.Label(self.GUIFrame_indentStock, font=self.helv36_login, text="Select Items")
-		self.indentItems_Label.place(x=450, y=150)
+###--------- indent Logout BUTTON
+		self.Button_log_out = tk.Button(self.GUIFrame_indentStock, font=self.helv36_login, bd=1, text='LOGOUT ',
+										command=lambda: self.logoutindent_btn(), width=10)
+		self.Button_log_out.place(x=100, y=500)
 
-		wb_obj_indent = load_workbook("/home/king/PycharmProjects/project_stores/data_storage/store_details.xlsx")
-
-		sheet_obj_indent = wb_obj_indent.active
-		m_row_indent = sheet_obj_indent.max_row
-		test_list = []
-		for i in range(1, m_row_indent + 1):
-			cell_obj1 = sheet_obj_indent.cell(row=i, column=3)
-			test_list.append(cell_obj1.value)
-
-
-		self.box_value = tk.StringVar()
-		self.combo = tkentrycomplete.AutocompleteCombobox(self.GUIFrame_indentStock,textvariable=self.box_value)
-		self.combo.config(font=self.times_16)
-		self.combo.config(width=20)
-		self.combo.set_completion_list(test_list)
-		self.combo.place(x=450, y=200)
-
-		###---------material quantity
-		self.indentQty_Label = tk.Label(self.GUIFrame_indentStock, font=self.helv36_login, text="Qty")
-		self.indentQty_Label.place(x=750, y=150)
-
-		self.indentQty_Var = StringVar()
-		self.indentQty_Entry = tk.Entry(self.GUIFrame_indentStock, font=self.helv36_login,
-										 textvariable=self.indentQty_Var, width=10)
-		self.indentQty_Entry.place(x=750, y=200)
-
-		###---------Reject button
-		self.Button_rejectIndent = tk.Button(self.GUIFrame_indentStock, font=self.helv36_login, bd=1, text='Reject ',
-										  command=lambda: self.indentReject_btn(), width=10)
-		self.Button_rejectIndent.place(x=500, y=350)
-
-		###---------Accept button
-		self.Button_acceptIndent = tk.Button(self.GUIFrame_indentStock, font=self.helv36_login, bd=1, text='Accept ',
-											 command=lambda: self.indentAccept_btn(), width=10)
-		self.Button_acceptIndent.place(x=500, y=300)
-
-		###---------Update button
-		self.Button_updateIndent = tk.Button(self.GUIFrame_indentStock, font=self.helv36_login, bd=1, text='Update ',
-											 command=lambda: self.indentUpdate_btn(), width=10)
-		self.Button_updateIndent.place(x=700, y=350)
-
-		###---------clear button
-		self.Button_ClearIndent = tk.Button(self.GUIFrame_indentStock, font=self.helv36_login, bd=1, text='Clear  ',
-											 command=lambda: self.clearUpdate_btn(), width=10)
-		self.Button_ClearIndent.place(x=700, y=300)
+###---------indent back BUTTON
+		self.Button_backAdmin = tk.Button(self.GUIFrame_indentStock, font=self.helv36_login, bd=1, text='BACK ',
+										  command=lambda: self.indentBack_btn(), width=10)
+		self.Button_backAdmin.place(x=600, y=500)
 
 	def indentBack_btn(self):
 		self.Button_backAdmin.destroy()
@@ -724,48 +761,113 @@ class rpi_UI:
 		self.Button_backAdmin.destroy()
 		self.page_one()
 
-	def indentReject_btn(self):
+	def indentRemove_btn(self):
 		self.txtIndent.configure(state='normal')
 		self.txtIndent.delete(self.start_d, self.end_d)
 		self.txtIndent.configure(state='disable')
 		self.line=0
-		pass
 
-	def indentAccept_btn(self):
+	def indentAdd_btn(self):
 		if(self.box_value.get()==""):
 			tk.messagebox.showerror("Error", "Material Name")
-			pass
 		elif(self.indentQty_Var.get()==""):
 			tk.messagebox.showerror("Error", "Quantity")
-			pass
 		else:
 			self.txtIndent.configure(state='normal')
 			self.txtIndent.mark_set("insert", END)
-			#self.txtIndent.delete(1.0, END)
 			self.txtIndent.insert(tk.END, str(self.indentQty_Var.get()).ljust(5)+' | ')
 			self.txtIndent.insert(tk.END, str(self.box_value.get()))
 			self.txtIndent.insert(tk.INSERT,'\n')
 			self.txtIndent.configure(state='disable')
 
-
+###---text triple click event
 	def Indent_text_button(self, event):
 		index = self.txtIndent.index("@%s,%s" % (event.x, event.y))
 		self.line, char = index.split(".")
-		print("you clicked line %s" % self.line)
 		self.start_d = self.line + '.0'
 		self.end_d = str(int(self.line) + 1) + '.0'
-		print(self.start_d)
-		print(self.end_d)
+		if(self.loginName=="westtek"):
+			pass
+			print("westtek admin")
 
-
+####---text clear event
 	def clearUpdate_btn(self):
 		self.txtIndent.configure(state='normal')
 		self.txtIndent.delete(1.0, END)
 		self.txtIndent.configure(state='disable')
+
+	####----Update text data to excel with naming data and time
+	def indentUpdate_btn(self):
+		wbIndent = openpyxl.Workbook()
+		sheet = wbIndent.active
+		text=self.txtIndent.get("1.0",END).splitlines()
+		sheet.cell(row=1, column=1).value = "Sl No"
+		sheet.cell(row=1, column=2).value = "Material Description"
+		sheet.cell(row=1, column=3).value = "Quantity"
+
+		data_len=len(text)-1
+		for i in range(data_len):
+			x = text[i].split("|")
+			sheet.cell(row=i + 2, column=1).value = i+1
+			sheet.cell(row=i + 2, column=2).value = x[1]
+			sheet.cell(row=i + 2, column=3).value =x[0].strip()
+		ts = time.time()
+		st = datetime.datetime.fromtimestamp(ts).strftime('%Y%m%d%H%M%S')
+		wbIndent.save("//home/king/Desktop/"+self.loginName+st+".xlsx")
+		self.txtIndent.delete(1.0, END)
+
+
+
+######---Function related to Indent admin
+	def indentAcceptAdmin_btn(self):
 		pass
 
-	def indentUpdate_btn(self):
+	def indentRejectAdmin_btn(self):
 		pass
+
+	def clearUpdateAdmin_btn(self):
+		self.userIndent.configure(state='normal')
+		self.userIndent.delete(1.0, END)
+		self.userIndent.configure(state='disable')
+		pass
+
+	def indentUpdateAdmin_btn(self):
+		pass
+
+	def OptionMenu_CheckButton(self,event):
+		self.entries = os.listdir('/home/king/PycharmProjects/project_stores/data_storage/user_indent/'+self.clicked.get()+'/')
+		#self.entries=self.entries1.sort()
+		self.entries= sorted(self.entries,reverse=True)
+		self.userIndent.configure(state='normal')
+		self.userIndent.delete(1.0, END)
+		for entry in self.entries:
+			self.userIndent.insert(tk.END, str(entry))
+			self.userIndent.insert(tk.INSERT, '\n')
+		self.userIndent.configure(state='disable')
+		
+	def userIndent_button(self,event):
+		index = self.userIndent.index("@%s,%s" % (event.x, event.y))
+		line, char = index.split(".")
+		if(len(self.entries)>=int(line)):
+			print(self.entries[int(line)-1])
+			self.userIndent.configure(state='normal')
+			self.userIndent.delete(1.0, END)
+			self.wb_IndentIndvid = openpyxl.load_workbook("/home/king/PycharmProjects/project_stores/data_storage/user_indent/Surendar_t/Surendar_t20210617215735.xlsx")
+			self.sheet_IndentIndvid = self.wb_IndentIndvid["Sheet"]
+			self.row_count_IndentIndvid = self.sheet_IndentIndvid.max_row
+			self.column_count_IndentIndvid = self.sheet_IndentIndvid.max_column
+
+			for i in range(1, self.row_count_IndentIndvid + 1):
+				for j in range(1, self.column_count_IndentIndvid + 1):
+					data = self.sheet_IndentIndvid.cell(row=i, column=j).value
+					if (j == 1):
+						self.txtIndent.insert(tk.END, str(data).ljust(5) + ' | ')
+					elif (j == 2):
+						self.txtIndent.insert(tk.END, str(data).ljust(50) + ' | ')
+					elif (j == 3):
+						self.txtIndent.insert(tk.END, str(data).ljust(10) + ' | ')
+				self.txtIndent.insert(tk.INSERT, '\n')
+			self.txtIndent.configure(state='disable')
 
 
 #########################################HISTORY BUTTON#################################################
@@ -814,7 +916,7 @@ class rpi_UI:
 		self.txtIndent_history.configure(state='normal')
 		self.txtIndent_history.delete(1.0, END)
 
-		self.wb_history = load_workbook(str(data_folder) + "/data_storage/history_details.xlsx")
+		self.wb_history = openpyxl.load_workbook(str(data_folder) + "/data_storage/history_details.xlsx")
 		self.sheet_history = self.wb_history["Sheet1"]
 		self.row_count_history = self.sheet_history.max_row
 		self.column_count_history = self.sheet_history.max_column
